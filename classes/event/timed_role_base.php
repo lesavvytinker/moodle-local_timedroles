@@ -30,9 +30,10 @@ abstract class timed_role_base extends \core\event\base {
      * Build an event from a local_timedroles record.
      *
      * @param \stdClass $record
+     * @param array $extraother extra values for 'other'
      * @return static
      */
-    public static function create_from_record(\stdClass $record): self {
+    public static function create_from_record(\stdClass $record, array $extraother = []): self {
         $event = static::create([
             'objectid' => $record->id,
             'context' => \context::instance_by_id($record->contextid),
@@ -42,7 +43,7 @@ abstract class timed_role_base extends \core\event\base {
                 'roleid' => (int) $record->roleid,
                 'timestart' => (int) $record->timestart,
                 'timeend' => (int) $record->timeend,
-            ],
+            ] + $extraother,
         ]);
         $event->add_record_snapshot('local_timedroles', $record);
         return $event;

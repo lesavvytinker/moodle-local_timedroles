@@ -47,6 +47,12 @@ if ($hassiteconfig) {
             1
         ));
         $settings->add(new admin_setting_configcheckbox(
+            'local_timedroles/notifychange',
+            get_string('notifychange', 'local_timedroles'),
+            get_string('notifychange_desc', 'local_timedroles'),
+            1
+        ));
+        $settings->add(new admin_setting_configcheckbox(
             'local_timedroles/notifyassigner',
             get_string('notifyassigner', 'local_timedroles'),
             get_string('notifyassigner_desc', 'local_timedroles'),

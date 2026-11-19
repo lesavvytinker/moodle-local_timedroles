@@ -63,14 +63,33 @@ class notifier {
     }
 
     /**
+     * The end date of an active role has been changed.
+     *
+     * @param \stdClass $record the record after the change
+     * @param \stdClass $old the record before the change
+     */
+    public static function role_changed(\stdClass $record, \stdClass $old): void {
+        if (self::enabled('notifychange')) {
+            self::send('rolechanged', (int) $record->userid, $record, 'msgchanged', ['oldtimeend' => (int) $old->timeend]);
+        }
+    }
+
+    /**
      * Build and send one notification.
      *
      * @param string $provider message provider name
      * @param int $touserid
      * @param \stdClass $record
      * @param string $stringkey prefix for the subject/body strings
+     * @param int[] $extratimes extra timestamps to format for the message, keyed by placeholder name
      */
-    protected static function send(string $provider, int $touserid, \stdClass $record, string $stringkey): void {
+    protected static function send(
+        string $provider,
+        int $touserid,
+        \stdClass $record,
+        string $stringkey,
+        array $extratimes = []
+    ): void {
         global $DB;
 
         $to = \core_user::get_user($touserid);
@@ -96,6 +115,9 @@ class notifier {
             'timeend' => userdate($record->timeend, $fmt, $tz),
             'url' => $url->out(false),
         ];
+        foreach ($extratimes as $key => $time) {
+            $a->$key = userdate($time, $fmt, $tz);
+        }
 
         $subject = $sm->get_string($stringkey . 'subject', 'local_timedroles', $a, $lang);
         $body = $sm->get_string($stringkey . 'body', 'local_timedroles', $a, $lang);

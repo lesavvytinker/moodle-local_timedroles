@@ -26,6 +26,7 @@ require('../../config.php');
 
 use local_timedroles\manager;
 use local_timedroles\form\assign_form;
+use local_timedroles\form\edit_form;
 
 $courseid = required_param('id', PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
@@ -48,6 +49,51 @@ if ($action === 'revoke' && $recid) {
     require_sesskey();
     manager::revoke($recid, $context->id);
     redirect($url, get_string('revoked', 'local_timedroles'), null, \core\output\notification::NOTIFY_SUCCESS);
+}
+
+if ($action === 'edit' && $recid) {
+    $record = $DB->get_record('local_timedroles', ['id' => $recid, 'contextid' => $context->id], '*', MUST_EXIST);
+    if (!in_array((int) $record->status, [manager::STATUS_SCHEDULED, manager::STATUS_ACTIVE])) {
+        redirect(
+            $url,
+            get_string('errornotchangeable', 'local_timedroles'),
+            null,
+            \core\output\notification::NOTIFY_WARNING
+        );
+    }
+
+    $editurl = new moodle_url($url, ['action' => 'edit', 'recid' => $record->id]);
+    $rolenames = role_get_names($context, ROLENAME_ALIAS, true);
+    $holder = core_user::get_user($record->userid);
+    $editform = new edit_form($editurl, [
+        'record' => $record,
+        'username' => $holder ? fullname($holder) : '-',
+        'rolename' => $rolenames[$record->roleid] ?? '-',
+    ]);
+    $editform->set_data(['timestart' => $record->timestart, 'timeend' => $record->timeend, 'note' => $record->note]);
+
+    if ($editform->is_cancelled()) {
+        redirect($url);
+    } else if ($data = $editform->get_data()) {
+        manager::update(
+            $record->id,
+            $context->id,
+            (int) ($data->timestart ?? $record->timestart),
+            (int) $data->timeend,
+            (string) ($data->note ?? '')
+        );
+        redirect($url, get_string('updated', 'local_timedroles'), null, \core\output\notification::NOTIFY_SUCCESS);
+    }
+
+    $PAGE->set_url($editurl);
+    $PAGE->navbar->add(get_string('pluginname', 'local_timedroles'), $url);
+    $PAGE->navbar->add(get_string('editheader', 'local_timedroles'));
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('editheader', 'local_timedroles'));
+    echo html_writer::div(get_string('editintro', 'local_timedroles'), 'mb-3');
+    $editform->display();
+    echo $OUTPUT->footer();
+    exit;
 }
 
 // Only roles this user is allowed to assign here (respects Define roles > Allow role assignments).
@@ -116,8 +162,9 @@ if (!$records) {
     foreach ($records as $r) {
         $actions = '';
         if (in_array((int) $r->status, [manager::STATUS_SCHEDULED, manager::STATUS_ACTIVE])) {
+            $editurl = new moodle_url($url, ['action' => 'edit', 'recid' => $r->id]);
             $revokeurl = new moodle_url($url, ['action' => 'revoke', 'recid' => $r->id, 'sesskey' => sesskey()]);
-            $actions = $OUTPUT->action_link(
+            $actions = html_writer::link($editurl, get_string('edit')) . ' | ' . $OUTPUT->action_link(
                 $revokeurl,
                 get_string('revoke', 'local_timedroles'),
                 new confirm_action(get_string('confirmrevoke', 'local_timedroles'))

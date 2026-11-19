@@ -35,22 +35,31 @@ $string['currentroles'] = 'Current roles';
 $string['currentroles_help'] = 'The roles this user has in the course right now, including any inherited from the category or site, and any timed roles already in place. These are the roles they go back to when the new timed role ends.';
 $string['currentroles_none'] = 'No roles in this course';
 $string['currentroles_select'] = 'Choose a user to see their current roles.';
+$string['editheader'] = 'Change a timed role';
+$string['editintro'] = 'Change when this timed role ends, for example to extend it. If it hasn\'t started yet you can also change when it starts. To change the user or the role, end this one and set up a new one.';
 $string['errorendbeforestart'] = 'The end time must be after the start time.';
 $string['errorendinpast'] = 'The end time must be in the future.';
+$string['errornotchangeable'] = 'This timed role has already ended, so it can\'t be changed. Set up a new one instead.';
 $string['errornotenrolled'] = 'Choose a user enrolled in this course.';
 $string['errorrole'] = 'You can\'t assign that role here.';
 $string['eventcreated'] = 'Timed role set up';
 $string['eventexpired'] = 'Timed role expired';
 $string['eventrevoked'] = 'Timed role ended early';
 $string['eventstarted'] = 'Timed role started';
+$string['eventupdated'] = 'Timed role changed';
 $string['intro'] = 'Give an enrolled user an extra role until a set date and time. When it ends, the extra role is removed automatically and the user keeps whatever roles they already had.';
 $string['messageprovider:assignerexpired'] = 'A timed role you set up has ended';
+$string['messageprovider:rolechanged'] = 'The end date of your timed role has changed';
 $string['messageprovider:roleended'] = 'Your timed role has ended';
 $string['messageprovider:rolestarted'] = 'You have been given a timed role';
 $string['msgassignerexpiredbody'] = 'The {$a->role} role you gave {$a->user} in {$a->course} ended on {$a->timeend}. Their other roles in the course have not changed.
 
 {$a->url}';
 $string['msgassignerexpiredsubject'] = '{$a->user}\'s {$a->role} role in {$a->course} has ended';
+$string['msgchangedbody'] = 'The end date of your {$a->role} role in {$a->course} has changed. It now ends on {$a->timeend} (it was {$a->oldtimeend}). After that you will go back to your usual role(s) in the course.
+
+{$a->url}';
+$string['msgchangedsubject'] = 'Your {$a->role} role in {$a->course} now ends {$a->timeend}';
 $string['msgexpiredbody'] = 'Your {$a->role} role in {$a->course} ended on {$a->timeend}. Your other roles in the course have not changed.
 
 {$a->url}';
@@ -71,6 +80,8 @@ $string['notifications'] = 'Notifications';
 $string['notifications_desc'] = 'Users can still turn individual notifications off in their own notification preferences.';
 $string['notifyassigner'] = 'Notify the person who set it up';
 $string['notifyassigner_desc'] = 'Tell the person who set up a timed role when it expires automatically.';
+$string['notifychange'] = 'Notify the user when the end date changes';
+$string['notifychange_desc'] = 'Tell the user when the end date of their active timed role is changed, for example when it is extended.';
 $string['notifyend'] = 'Notify the user when the role ends';
 $string['notifyend_desc'] = 'Tell the user when their timed role expires or is ended early.';
 $string['notifystart'] = 'Notify the user when the role starts';
@@ -95,5 +106,9 @@ $string['statusscheduled'] = 'Scheduled';
 $string['taskprocess'] = 'Start and end timed roles';
 $string['timedroles:manage'] = 'Manage timed roles in a course';
 $string['timeend'] = 'Ends';
+$string['timeendedit'] = 'Ends';
+$string['timeendedit_help'] = 'Move this later to extend the role, or earlier to shorten it. The user is told about the new end date.';
 $string['timestart'] = 'Starts';
+$string['timestartstarted'] = '{$a} (already started)';
+$string['updated'] = 'Timed role updated.';
 $string['viewlogs'] = 'View the audit trail in the course logs';

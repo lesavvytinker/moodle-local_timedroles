@@ -167,6 +167,55 @@ class manager {
     }
 
     /**
+     * Change the dates or reason of a scheduled or active timed role.
+     *
+     * The start time can only change while the role is still scheduled. Moving the start time
+     * into the past starts the role straight away; moving the end time into the past ends it.
+     *
+     * @param int $id
+     * @param int $contextid the course context the record must belong to
+     * @param int $timestart ignored once the role has started
+     * @param int $timeend
+     * @param string $note
+     */
+    public static function update(int $id, int $contextid, int $timestart, int $timeend, string $note = ''): void {
+        global $DB;
+
+        $record = $DB->get_record('local_timedroles', ['id' => $id, 'contextid' => $contextid], '*', MUST_EXIST);
+        $status = (int) $record->status;
+        if (!in_array($status, [self::STATUS_SCHEDULED, self::STATUS_ACTIVE])) {
+            throw new \moodle_exception('errornotchangeable', 'local_timedroles');
+        }
+        if ($status === self::STATUS_ACTIVE) {
+            $timestart = (int) $record->timestart;
+        }
+        if ($timeend <= $timestart) {
+            throw new \coding_exception('timeend must be after timestart');
+        }
+
+        $old = clone $record;
+        $record->timestart = $timestart;
+        $record->timeend = $timeend;
+        $record->note = \core_text::substr($note, 0, 255);
+        $record->timemodified = time();
+        $DB->update_record('local_timedroles', $record);
+
+        event\timed_role_updated::create_from_record($record, [
+            'oldtimestart' => (int) $old->timestart,
+            'oldtimeend' => (int) $old->timeend,
+        ])->trigger();
+
+        $now = time();
+        if ($timeend <= $now) {
+            self::finish($record, self::STATUS_EXPIRED);
+        } else if ($status === self::STATUS_SCHEDULED && $timestart <= $now) {
+            self::activate($record);
+        } else if ($status === self::STATUS_ACTIVE && (int) $old->timeend !== $timeend) {
+            self::notify(fn() => notifier::role_changed($record, $old));
+        }
+    }
+
+    /**
      * Scheduled task work: start due assignments, end expired ones.
      *
      * @param int|null $now

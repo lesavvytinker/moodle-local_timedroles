@@ -15,6 +15,8 @@ leave. When the period ends, the extra role is removed automatically and the use
 - A scheduled task (every 5 minutes) starts future-dated roles and removes expired ones.
 - Only roles the current user is allowed to assign (Site admin > Users > Define roles > Allow role
   assignments) are offered.
+- "Edit" changes the end date of an active or scheduled role (e.g. to extend it), or the start date of one
+  that hasn't started yet. The user is told about the new end date.
 - "End now" removes a timed role early.
 - Implements the Privacy API.
 
@@ -34,6 +36,7 @@ report that reads them:
 | Event | When |
 |---|---|
 | Timed role set up | Someone creates a timed role (logs who, for whom, which role, until when) |
+| Timed role changed | Someone edits the dates or reason (logs old and new dates) |
 | Timed role started | The role is actually assigned (straight away, or by the scheduled task) |
 | Timed role expired | The role is removed at its end time |
 | Timed role ended early | Someone clicks "End now" (logs who) |

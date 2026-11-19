@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 (2026-11-19)
+- Edit link on each active or scheduled timed role. You can extend or shorten
+  the end date (e.g. for extra leave), change the start date of a role that
+  hasn't started yet, and update the reason.
+- The user is told when the end date of their active role changes (can be
+  switched off in the admin settings), and each change is logged with the old
+  and new dates.
+
 ## 0.3.0 (2026-11-18)
 - When you pick a user, their current roles show under the picker (including
   roles inherited from the category or site, and any timed roles already in
