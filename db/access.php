@@ -35,4 +35,19 @@ $capabilities = [
         ],
         'clonepermissionsfrom' => 'moodle/role:assign',
     ],
+    'local/timedroles:pauseown' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_USER,
+        'archetypes' => [
+            'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/timedroles:pauseothers' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_USER,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

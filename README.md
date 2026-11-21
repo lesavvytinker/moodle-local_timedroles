@@ -20,6 +20,26 @@ leave. When the period ends, the extra role is removed automatically and the use
 - "End now" removes a timed role early.
 - Implements the Privacy API.
 
+## Notification pauses (new in 0.5.0)
+
+Going on leave? Pause someone's Moodle notifications between two dates so they don't come back to a full inbox.
+
+- While paused, Moodle doesn't send them notifications by email or pop-up (forum posts, submissions, grading
+  and so on). They keep full access to their courses.
+- Notifications switch back on automatically at the end time.
+- It works by switching on the user's own "Disable notifications" setting (in their notification preferences)
+  and putting it back exactly as it was afterwards. Moodle's message system already respects that setting, so
+  nothing about how messages are sent is changed. Password resets and any notifications an administrator has
+  forced on still go through.
+- **Users**: Preferences > Pause notifications (capability `local/timedroles:pauseown`, allowed for all
+  authenticated users by default).
+- **Managers**: open any user's Preferences > Pause notifications (capability `local/timedroles:pauseothers`),
+  and see all current and upcoming pauses under Site administration > Users > Notification pauses.
+- Pauses can be edited, ended early or cancelled. Overlapping pauses for the same person aren't allowed.
+- The user sees a reminder (once per login) while paused, with a link to switch notifications back on. They're
+  told when someone else pauses their notifications, and when a pause ends.
+- Every change is logged (scheduled, started, changed, ended).
+
 ## Notifications (new in 0.2.0)
 
 - The user is told when the timed role starts (including when it ends) and when it ends.

@@ -23,6 +23,39 @@
  */
 
 /**
+ * Adds a "Pause notifications" link to the user's Preferences page (under Miscellaneous).
+ *
+ * @param navigation_node $navigation
+ * @param stdClass $user
+ * @param context_user $usercontext
+ * @param stdClass $course
+ * @param context_course $coursecontext
+ */
+function local_timedroles_extend_navigation_user_settings(
+    navigation_node $navigation,
+    stdClass $user,
+    context_user $usercontext,
+    stdClass $course,
+    context_course $coursecontext
+): void {
+    global $USER;
+    if (isguestuser($user) || !empty($user->deleted)) {
+        return;
+    }
+    $capability = ($user->id == $USER->id) ? 'local/timedroles:pauseown' : 'local/timedroles:pauseothers';
+    if (!has_capability($capability, $usercontext)) {
+        return;
+    }
+    $navigation->add(
+        get_string('pausenotifications', 'local_timedroles'),
+        new moodle_url('/local/timedroles/pause.php', ['userid' => $user->id]),
+        navigation_node::TYPE_SETTING,
+        null,
+        'local_timedroles_pause'
+    );
+}
+
+/**
  * Adds a "Timed roles" link to the course navigation (More menu).
  *
  * @param navigation_node $navigation

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/timedroles/db" VERSION="20261118" COMMENT="XMLDB file for local_timedroles"
+<XMLDB PATH="local/timedroles/db" VERSION="20261121" COMMENT="XMLDB file for local_timedroles"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -29,6 +29,28 @@
       <INDEXES>
         <INDEX NAME="status-timestart" UNIQUE="false" FIELDS="status, timestart"/>
         <INDEX NAME="status-timeend" UNIQUE="false" FIELDS="status, timeend"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_timedroles_pause" COMMENT="Scheduled pauses of a user's notifications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User whose notifications are paused"/>
+        <FIELD NAME="timestart" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timeend" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 scheduled, 1 active, 2 ended, 3 cancelled"/>
+        <FIELD NAME="prevemailstop" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user's own Disable notifications setting before the pause started"/>
+        <FIELD NAME="note" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="createdby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="pause-status-timestart" UNIQUE="false" FIELDS="status, timestart"/>
+        <INDEX NAME="pause-status-timeend" UNIQUE="false" FIELDS="status, timeend"/>
       </INDEXES>
     </TABLE>
   </TABLES>

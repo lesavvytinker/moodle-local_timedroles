@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 (2026-11-21)
+- New: notification pauses. Pause someone's Moodle notifications between two
+  dates (e.g. while they're on leave) so they don't come back to a full inbox.
+  They keep full access to their courses, and notifications switch back on
+  automatically. Uses Moodle's own "Disable notifications" setting, and puts
+  it back exactly as it was afterwards.
+- Users can pause their own notifications from Preferences > Pause
+  notifications. Managers can pause anyone's, and see every current and
+  upcoming pause under Site administration > Users > Notification pauses.
+- Pauses can be edited (extend or shorten), ended early or cancelled.
+- The user gets a reminder while paused, and a message when someone else
+  pauses their notifications and when a pause ends. Every change is logged.
+
 ## 0.4.0 (2026-11-19)
 - Edit link on each active or scheduled timed role. You can extend or shorten
   the end date (e.g. for extra leave), change the start date of a role that

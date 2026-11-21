@@ -28,6 +28,13 @@ if ($hassiteconfig) {
     $settings = new admin_settingpage('local_timedroles', get_string('pluginname', 'local_timedroles'));
     $ADMIN->add('localplugins', $settings);
 
+    $ADMIN->add('accounts', new admin_externalpage(
+        'local_timedroles_pauses',
+        get_string('pausesoverview', 'local_timedroles'),
+        new moodle_url('/local/timedroles/pauses.php'),
+        'local/timedroles:pauseothers'
+    ));
+
     if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_heading(
             'local_timedroles/notifyheading',
@@ -50,6 +57,12 @@ if ($hassiteconfig) {
             'local_timedroles/notifychange',
             get_string('notifychange', 'local_timedroles'),
             get_string('notifychange_desc', 'local_timedroles'),
+            1
+        ));
+        $settings->add(new admin_setting_configcheckbox(
+            'local_timedroles/notifypause',
+            get_string('notifypause', 'local_timedroles'),
+            get_string('notifypause_desc', 'local_timedroles'),
             1
         ));
         $settings->add(new admin_setting_configcheckbox(

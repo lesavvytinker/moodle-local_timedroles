@@ -75,6 +75,75 @@ class notifier {
     }
 
     /**
+     * Someone else has scheduled (or changed) a pause of this user's notifications.
+     *
+     * @param \stdClass $pause
+     */
+    public static function pause_scheduled(\stdClass $pause): void {
+        if (self::enabled('notifypause')) {
+            self::send_pause('pausescheduled', $pause, 'msgpausescheduled');
+        }
+    }
+
+    /**
+     * A pause has ended and notifications are back on.
+     *
+     * @param \stdClass $pause
+     */
+    public static function pause_ended(\stdClass $pause): void {
+        if (self::enabled('notifypause')) {
+            self::send_pause('pauseended', $pause, 'msgpauseended');
+        }
+    }
+
+    /**
+     * Build and send a notification about a notification pause, to the paused user.
+     *
+     * @param string $provider message provider name
+     * @param \stdClass $pause
+     * @param string $stringkey prefix for the subject/body strings
+     */
+    protected static function send_pause(string $provider, \stdClass $pause, string $stringkey): void {
+        global $USER;
+
+        $to = \core_user::get_user($pause->userid);
+        if (!$to || $to->deleted || $to->suspended) {
+            return;
+        }
+        $by = $USER->id ? \core_user::get_user($USER->id) : null;
+        $tz = \core_date::get_user_timezone($to);
+        $sm = get_string_manager();
+        $lang = $to->lang ?: null;
+        $fmt = $sm->get_string('strftimedatetime', 'langconfig', null, $lang);
+        $url = new \moodle_url('/local/timedroles/pause.php');
+
+        $a = (object) [
+            'by' => $by ? fullname($by) : '',
+            'timestart' => userdate($pause->timestart, $fmt, $tz),
+            'timeend' => userdate($pause->timeend, $fmt, $tz),
+            'url' => $url->out(false),
+        ];
+        $subject = $sm->get_string($stringkey . 'subject', 'local_timedroles', $a, $lang);
+        $body = $sm->get_string($stringkey . 'body', 'local_timedroles', $a, $lang);
+
+        $message = new \core\message\message();
+        $message->component = 'local_timedroles';
+        $message->name = $provider;
+        $message->userfrom = \core_user::get_noreply_user();
+        $message->userto = $to;
+        $message->subject = $subject;
+        $message->fullmessage = $body;
+        $message->fullmessageformat = FORMAT_PLAIN;
+        $message->fullmessagehtml = nl2br(s($body));
+        $message->smallmessage = $subject;
+        $message->notification = 1;
+        $message->contexturl = $a->url;
+        $message->contexturlname = $sm->get_string('pausenotifications', 'local_timedroles', null, $lang);
+        $message->courseid = SITEID;
+        message_send($message);
+    }
+
+    /**
      * Build and send one notification.
      *
      * @param string $provider message provider name

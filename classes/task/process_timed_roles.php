@@ -40,6 +40,8 @@ class process_timed_roles extends \core\task\scheduled_task {
      */
     public function execute(): void {
         [$activated, $expired] = manager::process_due();
-        mtrace("local_timedroles: {$activated} started, {$expired} ended.");
+        mtrace("local_timedroles: {$activated} timed roles started, {$expired} ended.");
+        [$started, $ended] = \local_timedroles\pause_manager::process_due();
+        mtrace("local_timedroles: {$started} notification pauses started, {$ended} ended.");
     }
 }

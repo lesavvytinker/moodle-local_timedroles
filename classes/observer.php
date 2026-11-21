@@ -54,5 +54,7 @@ class observer {
         global $DB;
         $DB->delete_records('local_timedroles', ['userid' => $event->objectid]);
         $DB->set_field('local_timedroles', 'assignedby', 0, ['assignedby' => $event->objectid]);
+        $DB->delete_records('local_timedroles_pause', ['userid' => $event->objectid]);
+        $DB->set_field('local_timedroles_pause', 'createdby', 0, ['createdby' => $event->objectid]);
     }
 }
