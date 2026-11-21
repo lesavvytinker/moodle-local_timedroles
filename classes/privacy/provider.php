@@ -158,7 +158,7 @@ class provider implements
     /**
      * Export notification pauses in a user's context that involve the given user.
      *
-     * @param \context_user $context
+     * @param \context $context the paused user's context
      * @param int $userid the user whose data is being exported
      */
     protected static function export_pauses(\context $context, int $userid): void {

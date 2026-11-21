@@ -83,6 +83,8 @@ final class pause_test extends \advanced_testcase {
     public function test_notifications_held_back_while_paused(): void {
         global $DB;
         $this->resetAfterTest();
+        // Messages are only sent when the database transaction commits, so emails need this to be caught.
+        $this->preventResetByRollback();
         $course = $this->getDataGenerator()->create_course();
         $paused = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $normal = $this->getDataGenerator()->create_and_enrol($course, 'student');
