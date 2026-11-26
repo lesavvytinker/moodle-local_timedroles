@@ -67,7 +67,7 @@ See [CHANGES.md](CHANGES.md).
 
 ## Requirements
 
-Moodle 4.5 – 5.1.
+Moodle 4.5 – 5.3.
 
 ## Installation
 

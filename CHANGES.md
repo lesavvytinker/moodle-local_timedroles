@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.1 (2026-11-27)
+Fixes from the plugins directory review (MMR-682):
+- Security: changing or ending a timed role now checks that you are allowed
+  to assign that role yourself, and that you can see that user (separate
+  groups). The Edit and End now links are hidden when you can't. The same
+  check now also applies when a timed role is created through the API.
+- Privacy: the user picker no longer shows email addresses directly. It shows
+  only the identity fields your site is set to show (Show user identity), and
+  only to people allowed to see them.
+- Separate groups mode is respected: teachers without access to all groups
+  only see and manage people in their own groups.
+- Supported versions are now Moodle 4.5 to 5.3 (all tested), and maturity is
+  Beta, matching the plugins directory listing.
+
 ## 0.5.0 (2026-11-21)
 - New: notification pauses. Pause someone's Moodle notifications between two
   dates (e.g. while they're on leave) so they don't come back to a full inbox.

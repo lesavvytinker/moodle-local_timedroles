@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_timedroles';
-$plugin->version   = 2026112100;
+$plugin->version   = 2026112700;
 $plugin->requires  = 2024100700; // Moodle 4.5.
-$plugin->supported = [405, 501];
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.5.0';
+$plugin->supported = [405, 503];
+$plugin->maturity  = MATURITY_BETA;
+$plugin->release   = '0.5.1';

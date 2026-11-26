@@ -41,6 +41,84 @@ class manager {
     public const COMPONENT = 'local_timedroles';
 
     /**
+     * The groups the current user is limited to in a course, or null if they can see everyone.
+     *
+     * Only applies in separate groups mode without moodle/site:accessallgroups. An empty array
+     * means the user can't see anyone.
+     *
+     * @param \stdClass $course
+     * @param \context_course $context
+     * @return int[]|null
+     */
+    public static function visible_groupids(\stdClass $course, \context_course $context): ?array {
+        global $USER;
+        if (
+            (int) groups_get_course_groupmode($course) !== SEPARATEGROUPS
+            || has_capability('moodle/site:accessallgroups', $context)
+        ) {
+            return null;
+        }
+        $groups = groups_get_all_groups($course->id, $USER->id, $course->defaultgroupingid, 'g.id');
+        return array_map('intval', array_keys($groups));
+    }
+
+    /**
+     * Whether the current user can see a user in this course, given separate groups.
+     *
+     * @param int $userid
+     * @param \stdClass $course
+     * @param \context_course $context
+     * @return bool
+     */
+    public static function can_see_user(int $userid, \stdClass $course, \context_course $context): bool {
+        global $DB;
+        $groupids = self::visible_groupids($course, $context);
+        if ($groupids === null) {
+            return true;
+        }
+        if (!$groupids) {
+            return false;
+        }
+        [$insql, $params] = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
+        $params['userid'] = $userid;
+        return $DB->record_exists_select('groups_members', "userid = :userid AND groupid $insql", $params);
+    }
+
+    /**
+     * Whether the current user may set up, change or end a timed role of this role for this user.
+     *
+     * They need the plugin and role-assign capabilities, the role must be one they are allowed to
+     * assign here, and in separate groups mode the user must be in one of their groups.
+     *
+     * @param int $userid the user holding (or getting) the timed role
+     * @param int $roleid
+     * @param \context_course $context
+     * @return bool
+     */
+    public static function can_manage(int $userid, int $roleid, \context_course $context): bool {
+        if (!has_all_capabilities(['local/timedroles:manage', 'moodle/role:assign'], $context)) {
+            return false;
+        }
+        if (!array_key_exists($roleid, get_assignable_roles($context))) {
+            return false;
+        }
+        return self::can_see_user($userid, get_course($context->instanceid), $context);
+    }
+
+    /**
+     * Throw if the current user may not manage this timed role.
+     *
+     * @param int $userid
+     * @param int $roleid
+     * @param \context_course $context
+     */
+    public static function require_can_manage(int $userid, int $roleid, \context_course $context): void {
+        if (!self::can_manage($userid, $roleid, $context)) {
+            throw new \required_capability_exception($context, 'moodle/role:assign', 'nopermissions', '');
+        }
+    }
+
+    /**
      * Create a timed role assignment. Activates immediately if the start time has passed.
      *
      * @param int $courseid
@@ -65,6 +143,7 @@ class manager {
             throw new \coding_exception('timeend must be after timestart');
         }
         $context = \context_course::instance($courseid);
+        self::require_can_manage($userid, $roleid, $context);
         $now = time();
 
         $record = (object) [
@@ -161,6 +240,7 @@ class manager {
     public static function revoke(int $id, int $contextid): void {
         global $DB;
         $record = $DB->get_record('local_timedroles', ['id' => $id, 'contextid' => $contextid], '*', MUST_EXIST);
+        self::require_can_manage((int) $record->userid, (int) $record->roleid, \context::instance_by_id($contextid));
         if (in_array((int) $record->status, [self::STATUS_SCHEDULED, self::STATUS_ACTIVE])) {
             self::finish($record, self::STATUS_REVOKED);
         }
@@ -182,6 +262,7 @@ class manager {
         global $DB;
 
         $record = $DB->get_record('local_timedroles', ['id' => $id, 'contextid' => $contextid], '*', MUST_EXIST);
+        self::require_can_manage((int) $record->userid, (int) $record->roleid, \context::instance_by_id($contextid));
         $status = (int) $record->status;
         if (!in_array($status, [self::STATUS_SCHEDULED, self::STATUS_ACTIVE])) {
             throw new \moodle_exception('errornotchangeable', 'local_timedroles');

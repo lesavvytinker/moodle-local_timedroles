@@ -32,6 +32,7 @@ final class manager_test extends \advanced_testcase {
     public function test_expiry_keeps_primary_roles(): void {
         global $DB;
         $this->resetAfterTest();
+        $this->setAdminUser();
 
         $course = $this->getDataGenerator()->create_course();
         $context = \context_course::instance($course->id);
@@ -61,6 +62,7 @@ final class manager_test extends \advanced_testcase {
     public function test_scheduled_start(): void {
         global $DB;
         $this->resetAfterTest();
+        $this->setAdminUser();
 
         $course = $this->getDataGenerator()->create_course();
         $context = \context_course::instance($course->id);
@@ -82,6 +84,7 @@ final class manager_test extends \advanced_testcase {
     public function test_revoke(): void {
         global $DB;
         $this->resetAfterTest();
+        $this->setAdminUser();
 
         $course = $this->getDataGenerator()->create_course();
         $context = \context_course::instance($course->id);
@@ -100,6 +103,7 @@ final class manager_test extends \advanced_testcase {
     public function test_get_current_roles(): void {
         global $DB;
         $this->resetAfterTest();
+        $this->setAdminUser();
 
         $category = $this->getDataGenerator()->create_category();
         $course = $this->getDataGenerator()->create_course(['category' => $category->id]);

@@ -53,6 +53,8 @@ if ($action === 'revoke' && $recid) {
 
 if ($action === 'edit' && $recid) {
     $record = $DB->get_record('local_timedroles', ['id' => $recid, 'contextid' => $context->id], '*', MUST_EXIST);
+    // Only roles this user could assign themselves, for users they can see (separate groups).
+    manager::require_can_manage((int) $record->userid, (int) $record->roleid, $context);
     if (!in_array((int) $record->status, [manager::STATUS_SCHEDULED, manager::STATUS_ACTIVE])) {
         redirect(
             $url,
@@ -99,12 +101,34 @@ if ($action === 'edit' && $recid) {
 // Only roles this user is allowed to assign here (respects Define roles > Allow role assignments).
 $roles = get_assignable_roles($context, ROLENAME_ALIAS);
 
-$enrolled = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname, u.firstname');
+// Enrolled users this user can see: separate groups mode limits it to their own groups.
+$groupids = manager::visible_groupids($course, $context);
+$enrolled = [];
+if ($groupids !== []) {
+    // Only the identity fields the site shows, and only if this user may see them.
+    $userfields = \core_user\fields::for_identity($context)->with_name();
+    $ufsql = $userfields->get_sql('u', true);
+    [$esql, $eparams] = get_enrolled_sql($context, '', $groupids ?? 0);
+    $sql = "SELECT u.id {$ufsql->selects}
+              FROM {user} u
+              JOIN ($esql) je ON je.id = u.id
+                   {$ufsql->joins}
+             WHERE u.deleted = 0
+          ORDER BY u.lastname, u.firstname, u.id";
+    $enrolled = $DB->get_records_sql($sql, $eparams + $ufsql->params);
+}
+$identityfields = \core_user\fields::get_identity_fields($context);
 $currentroles = manager::get_current_roles($context, array_keys($enrolled));
 
 $users = [];
 foreach ($enrolled as $u) {
-    $label = fullname($u) . ($u->email ? ' (' . $u->email . ')' : '');
+    $identity = [];
+    foreach ($identityfields as $field) {
+        if (isset($u->$field) && $u->$field !== '') {
+            $identity[] = $u->$field;
+        }
+    }
+    $label = fullname($u) . ($identity ? ' (' . implode(', ', $identity) . ')' : '');
     // Show current roles in the picker too, so you can also search by role (e.g. type "student").
     $label .= ' — ' . (!empty($currentroles[$u->id]) ? implode(', ', $currentroles[$u->id])
         : get_string('currentroles_none', 'local_timedroles'));
@@ -143,6 +167,10 @@ if (empty($roles)) {
 }
 
 $records = $DB->get_records('local_timedroles', ['contextid' => $context->id], 'status ASC, timeend ASC');
+if ($groupids !== null) {
+    // Separate groups: only list timed roles for people in this user's groups.
+    $records = array_filter($records, fn($r) => manager::can_see_user((int) $r->userid, $course, $context));
+}
 echo $OUTPUT->heading(get_string('currentandpast', 'local_timedroles'), 3);
 
 if (!$records) {
@@ -161,7 +189,9 @@ if (!$records) {
     $fmt = get_string('strftimedatetimeshort', 'langconfig');
     foreach ($records as $r) {
         $actions = '';
-        if (in_array((int) $r->status, [manager::STATUS_SCHEDULED, manager::STATUS_ACTIVE])) {
+        $canchange = in_array((int) $r->status, [manager::STATUS_SCHEDULED, manager::STATUS_ACTIVE])
+            && manager::can_manage((int) $r->userid, (int) $r->roleid, $context);
+        if ($canchange) {
             $editurl = new moodle_url($url, ['action' => 'edit', 'recid' => $r->id]);
             $revokeurl = new moodle_url($url, ['action' => 'revoke', 'recid' => $r->id, 'sesskey' => sesskey()]);
             $actions = html_writer::link($editurl, get_string('edit')) . ' | ' . $OUTPUT->action_link(
